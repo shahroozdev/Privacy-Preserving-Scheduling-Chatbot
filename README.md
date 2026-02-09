@@ -83,3 +83,68 @@ I need a room for 6 people with a projector at 14:00
 - Minimal feature compromise
 
 Each response includes an explanation describing why the room was selected.
+##API Endpoints
+```text POST /parse```
+
+Parses natural language input into structured constraints.
+
+```text POST /match ```
+
+Returns the best matching room with reasoning.
+
+##Automated Testing
+
+- Sends 100 randomized scheduling requests
+
+- Measures NLP extraction accuracy
+
+- Tracks exact vs heuristic matches
+
+##Sample Output
+```
+{
+  "totalTests": 100,
+  "exactMatches": 62,
+  "heuristicMatches": 30,
+  "failures": 8
+}
+```
+###Getting Started
+```Clone Repository
+git clone https://github.com/your-username/privacy-scheduling-chatbot.git
+cd privacy-scheduling-chatbot
+```
+
+##Backend Setup
+```cd backend
+npm install
+npm run dev
+```
+##Frontend Setup
+```cd frontend
+npm install
+npm start
+```
+##Environment Variables
+```DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+DB_NAME=chatbot_rooms
+```
+##Out of Scope
+
+- Authentication
+
+- User accounts
+
+- Chat history
+
+- Analytics
+
+- Persistent user data storage
+
+
+##Author
+
+Muhammad Shahrooz Altaf
