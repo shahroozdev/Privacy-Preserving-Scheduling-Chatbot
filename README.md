@@ -1,150 +1,115 @@
 # Privacy-Preserving Scheduling Chatbot
 
-A privacy-first scheduling chatbot that understands natural language scheduling requests and suggests suitable meeting rooms without storing any user data.
+A full-stack intelligent booking system that allows users to find and book meeting rooms using natural language. The system features a custom NLP engine to extract constraints and a heuristic synthesis matcher to provide smart alternatives when an exact match isn't available.
+
+## 🚀 Key Features
+
+- **Natural Language Processing**: Built with `compromise` to extract capacity (supporting words like "ten" or digits "10"), time, and specific room features from user prompts.
+- **Heuristic Search & Synthesis**: If a perfect match isn't found, the bot synthesizes options—suggesting the closest available time or a room with a slightly different capacity.
+- **Database Integration**: Robust ORM management using `TypeORM` and `PostgreSQL`.
+- **Privacy-First**: Designed to handle scheduling constraints without requiring intrusive user data.
+- **Modern Tech Stack**: React 19 Frontend with a Node.js/TypeScript Express Backend.
 
 ---
 
-## Features
-
-- Natural language constraint extraction
-- Constraint-based room matching
-- Heuristic fallback for closest matches
-- Explainable room recommendations
-- Zero user data persistence
-- Stateless backend architecture
-- Automated evaluation script
-
----
-
-## Tech Stack
+## 🛠 Tech Stack
 
 ### Frontend
-- React.js
-- Tailwind CSS
+
+- **React 19**: Modern UI development.
+- **Vite**: Ultra-fast build tool and dev server.
+- **Tailwind CSS**: Utility-first styling.
+- **TypeScript**: Static typing for reliable frontend state.
 
 ### Backend
-- Node.js
-- Express.js
-- Compromise.js
 
-### Database
-- PostgreSQL
-- TypeORM  
-> Used only for synthetic room data
+- **Express 5**: Latest version of the standard Node.js framework.
+- **TypeORM**: Data mapping and PostgreSQL interaction.
+- **Compromise NLP**: Lightweight natural language processing for constraint extraction.
+- **ts-node & Nodemon**: Seamless TypeScript development environment.
 
 ---
 
-## Privacy Model
+## 📦 Installation & Setup
 
-- User input is never stored in a database
-- No personal identifiers are collected
-- No cookies or tracking mechanisms
-- Data exists only in memory during request lifecycle
-- Browser refresh or tab close clears all session data
+### Prerequisites
 
----
+- Node.js (v18+)
+- pnpm (recommended) or npm/yarn
+- PostgreSQL database instance
 
-## Project Structure
+### 1. Backend Setup
 
-```text
-frontend/
-backend/
- ├── nlp/
- ├── matching/
- ├── entities/
- ├── routes/
-tests/
-```
-## How It Works
-NLP Parsing
+1. Navigate to the backend folder:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies:
 
-Input
+   ```bash
+   pnpm install
+   ```
 
-I need a room for 6 people with a projector at 14:00
+3. Configure environment variables (create a .env file):
 
-## Output
+   ```text
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_USER=your_user
+    DB_PASS=your_password
+    DB_NAME=scheduling_db
+   ```
 
-{
-  "capacity": 6,
-  "time": "14:00",
-  "requirements": ["projector"]
-}
+4. Seed the database with rooms:
 
-### Room Matching Logic
+   ```bash
+   pnpm run seed
+   ```
 
-#### Exact Match
-- Capacity meets the requirement
-- Required features are available
-- Exact time slot is available
+5. Start development server:
 
-#### Closest Match (Heuristic)
-- Slightly larger room
-- Nearest available time
-- Minimal feature compromise
+   ```bash
+   pnpm run dev
+   ```
 
-Each response includes an explanation describing why the room was selected.
-##API Endpoints
-```text POST /parse```
+### 2. Frontend Setup
 
-Parses natural language input into structured constraints.
+1. Navigate to the frontend folder:
 
-```text POST /match ```
+   ```Bash
+   cd frontend2
+   ```
 
-Returns the best matching room with reasoning.
+2. Install dependencies:
 
-##Automated Testing
+   ```Bash
+   pnpm install
+   ```
 
-- Sends 100 randomized scheduling requests
+3. Start the Vite dev server:
 
-- Measures NLP extraction accuracy
+   ```Bash
+   pnpm run dev
+   ```
 
-- Tracks exact vs heuristic matches
+### 🧠 Logic Spotlight: Smart Alternatives
 
-##Sample Output
-```
-{
-  "totalTests": 100,
-  "exactMatches": 62,
-  "heuristicMatches": 30,
-  "failures": 8
-}
-```
-###Getting Started
-```Clone Repository
-git clone https://github.com/your-username/privacy-scheduling-chatbot.git
-cd privacy-scheduling-chatbot
-```
+The bot uses a Heuristic Synthesis Engine. When you ask for a "Room for 10 at 5pm with WiFi" and that room is booked, the system doesn't just say "No." It analyzes available data to offer:
 
-##Backend Setup
-```cd backend
-npm install
-npm run dev
-```
-##Frontend Setup
-```cd frontend
-npm install
-npm start
-```
-##Environment Variables
-```DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=chatbot_rooms
-```
-##Out of Scope
+    - Time-Shifted Option: "Room E is available at 3:00 PM."
 
-- Authentication
+    - Capacity-Shifted Option: "Room A is available at 5:00 PM but only fits 4 people."
 
-- User accounts
+### 📜 Scripts
 
-- Chat history
+| Service      | Command          | Description                                |
+| :----------- | :--------------- | :----------------------------------------- |
+| **Backend**  | `pnpm run dev`   | Starts nodemon with ts-node.               |
+| **Backend**  | `pnpm run seed`  | Populates database with initial room data. |
+| **Backend**  | `pnpm run build` | Compiles TypeScript to JS.                 |
+| **Frontend** | `pnpm run dev`   | Starts Vite development server.            |
+| **Frontend** | `pnpm run build` | Builds the React app for production.       |
 
-- Analytics
+### 📄 License
 
-- Persistent user data storage
-
-
-##Author
-
-Muhammad Shahrooz Altaf
+This project is licensed under the ISC License.
