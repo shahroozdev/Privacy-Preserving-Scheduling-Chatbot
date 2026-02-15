@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "seed": "ts-node src/seed.ts",
+"seed": "pnpm exec ts-node src/seed.ts",
     "test-harness": "ts-node src/test-harness.ts",
     "build": "tsc"
   },
