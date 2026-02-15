@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MatchingEngine = void 0;
+const utils_1 = require("../utils");
 class MatchingEngine {
     static findMatch(request, rooms) {
+        console.log(request, 'request');
         const exactMatches = rooms.filter(r => {
             if (request.capacity && r.capacity < request.capacity)
                 return false;
@@ -20,7 +22,7 @@ class MatchingEngine {
             return {
                 matchType: 'EXACT',
                 room: exactMatches[0],
-                explanation: `Perfect match! ${exactMatches[0].name} has capacity ${exactMatches[0].capacity}, includes all requested features, and is available at ${request.time}.`
+                explanation: `Perfect match! ${exactMatches[0].name} has capacity ${exactMatches[0].capacity}, includes all requested features, and is available at ${(0, utils_1.to12Hour)(request === null || request === void 0 ? void 0 : request.time)}.`
             };
         }
         let bestRoom = null;

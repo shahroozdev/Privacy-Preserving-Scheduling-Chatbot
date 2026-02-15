@@ -17,10 +17,9 @@ export const AppDataSource = new DataSource({
   entities: [Room],
   migrations: [],
   subscribers: [],
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: true,
   extra: {
-    sslmode: "require",
+    max: 20, // Maximum number of connections in the pool
+    idleTimeoutMillis: 30000,
   },
 });

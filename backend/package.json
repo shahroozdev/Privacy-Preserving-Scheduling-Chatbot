@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "nodemon src/index.ts",
-"seed": "pnpm exec ts-node src/seed.ts",
+    "dev": "pnpm exec ts-node src/index.ts",
+    "seed": "pnpm exec ts-node src/seed.ts",
     "test-harness": "ts-node src/test-harness.ts",
     "build": "tsc"
   },

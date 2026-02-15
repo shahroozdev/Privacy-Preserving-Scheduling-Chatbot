@@ -31,7 +31,7 @@ __decorate([
     __metadata("design:type", Array)
 ], Room.prototype, "features", void 0);
 __decorate([
-    (0, typeorm_1.Column)("simple-array"),
+    (0, typeorm_1.Column)("simple-array", { nullable: true }),
     __metadata("design:type", Array)
 ], Room.prototype, "availableSlots", void 0);
 exports.Room = Room = __decorate([
