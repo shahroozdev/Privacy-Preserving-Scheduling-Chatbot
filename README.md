@@ -77,7 +77,7 @@ A full-stack intelligent booking system that allows users to find and book meeti
 1. Navigate to the frontend folder:
 
    ```Bash
-   cd frontend2
+   cd frontend
    ```
 
 2. Install dependencies:
