@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import cors from "cors";
-import { AppDataSource } from "./data-source";
+import { AppDataSource, initializeDatabase } from "./data-source";
 import { NLPEngine } from "./nlp/processor";
 import { MatchingEngine } from "./matching/engine";
 import { Room } from "./entity/Room";
@@ -14,18 +14,19 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize DB
-AppDataSource.initialize()
-  .then(async () => {
-    console.log("Database connected.");
-  })
-  .catch((error) => console.log(error));
+// // Initialize DB
+// AppDataSource.initialize()
+//   .then(async () => {
+//     console.log("Database connected.");
+//   })
+//   .catch((error) => console.log(error));
 app.get("/", (req, res) => {
   res.send("Server is working!");
 });
 app.get("/rooms", async (req, res) => {
   try {
-    const roomRepo = AppDataSource.getRepository(Room);
+    const db = await initializeDatabase();
+    const roomRepo = db.getRepository(Room);
     const rooms = await roomRepo.find();
     res.json(rooms);
   } catch (error) {
@@ -62,7 +63,8 @@ app.post("/match", async (req, res) => {
     console.log("Extracted Constraints:", constraints);
 
     // 2. Module B: Matching
-    const roomRepo = AppDataSource.getRepository(Room);
+    const db = await initializeDatabase();
+    const roomRepo = db.getRepository(Room);
     const rooms = await roomRepo.find();
     const matchResult = MatchingEngine.findMatch(constraints, rooms);
 

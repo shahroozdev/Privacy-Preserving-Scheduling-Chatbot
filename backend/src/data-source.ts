@@ -7,19 +7,27 @@ dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.DB_HOST || "localhost",
+  host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || "5432"),
-  username: process.env.DB_USERNAME || "postgres",
-  password: process.env.DB_PASSWORD || "postgres",
-  database: process.env.DB_NAME || "scheduling_chatbot",
-  synchronize: true, // Auto-create tables for dev
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  // Use synchronize: false in production!
+  synchronize: process.env.NODE_ENV !== "production",
   logging: false,
   entities: [Room],
-  migrations: [],
-  subscribers: [],
-  ssl: true,
+  ssl: {
+    rejectUnauthorized: false, // Common requirement for serverless DB providers
+  },
   extra: {
-    max: 20, // Maximum number of connections in the pool
-    idleTimeoutMillis: 30000,
+    max: 2,
+    connectionTimeoutMillis: 10000, // Increase to 10 seconds
   },
 });
+
+export const initializeDatabase = async () => {
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
+  return AppDataSource;
+};
