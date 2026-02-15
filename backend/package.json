@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "pnpm exec ts-node src/index.ts",
+    "dev": "nodemon --watch \"src/**/*.ts\" --exec \"pnpm ts-node\" src/index.ts",
     "seed": "pnpm exec ts-node src/seed.ts",
     "test-harness": "ts-node src/test-harness.ts",
     "build": "tsc"
