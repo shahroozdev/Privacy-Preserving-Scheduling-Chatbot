@@ -1,6 +1,5 @@
 import { Room } from "../entity/Room";
 import { SchedulingConstraints } from "../nlp/processor";
-import { to12Hour } from "../utils";
 
 export interface MatchResult {
     matchType: 'EXACT' | 'HEURISTIC' | 'NONE';
@@ -27,7 +26,7 @@ export class MatchingEngine {
             return {
                 matchType: 'EXACT',
                 room: exactMatches[0],
-                explanation: `Perfect match! ${exactMatches[0].name} has capacity ${exactMatches[0].capacity}, includes all requested features, and is available at ${to12Hour(request?.time as string)}.`
+                explanation: `Perfect match! ${exactMatches[0].name} has capacity ${exactMatches[0].capacity}, includes all requested features, and is available at ${request?.time}.`
             };
         }
 
