@@ -46,21 +46,14 @@ exports.AppDataSource = new typeorm_1.DataSource({
     username: process.env.DB_USERNAME || "postgres",
     password: process.env.DB_PASSWORD || "postgres",
     database: process.env.DB_NAME || "scheduling_chatbot",
-    // CRITICAL: Never use synchronize in production!
-    synchronize: process.env.NODE_ENV !== "production",
-    logging: process.env.NODE_ENV === "development",
+    synchronize: true, // Auto-create tables for dev
+    logging: false,
     entities: [Room_1.Room],
     migrations: [],
     subscribers: [],
-    // SSL for production databases
-    ssl: process.env.NODE_ENV === "production"
-        ? { rejectUnauthorized: false }
-        : false,
-    // Serverless optimizations
+    ssl: true,
     extra: {
-        max: 2, // Low connection limit for serverless
-        min: 0, // Don't maintain idle connections
-        connectionTimeoutMillis: 3000,
+        max: 20, // Maximum number of connections in the pool
         idleTimeoutMillis: 30000,
     },
 });
