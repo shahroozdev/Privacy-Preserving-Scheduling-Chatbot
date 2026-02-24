@@ -88,7 +88,7 @@ class MatchingEngine {
                 room: bestExact,
                 explanation: reqTime
                     ? `I found an exact match. ${bestExact.name} is available at ${this.to12Hour(reqTime)}.`
-                    : `I found an exact match. ${bestExact.name} fits your requirements.`,
+                    : `I found an exact match. ${bestExact.name} fits your requirements with capcity ${bestExact.capacity} and features: ${bestExact.features}.`,
             };
         }
         const bestHeuristic = bestHeuristicAboveCapacity || bestHeuristicBelowCapacity;
@@ -106,8 +106,8 @@ class MatchingEngine {
                 matchType: "HEURISTIC",
                 room: bestHeuristic.room,
                 explanation: reqCap !== null && bestHeuristic.room.capacity < reqCap
-                    ? `I couldn't find a room for ${reqCap} people, but the closest option is ${bestHeuristic.room.name} with capacity ${bestHeuristic.room.capacity}${suggestedSlot ? ` at ${this.to12Hour(suggestedSlot)}` : ""}.`
-                    : `I couldn't find an exact match. The best alternative is ${bestHeuristic.room.name}${suggestedSlot ? ` at ${this.to12Hour(suggestedSlot)}` : ""} with capacity ${bestHeuristic.room.capacity}.`,
+                    ? `I couldn't find a room for ${reqCap} people, but the closest option is ${bestHeuristic.room.name} with capacity  ${bestHeuristic.room.capacity} and features: ${bestHeuristic.room.features}${suggestedSlot ? ` at ${this.to12Hour(suggestedSlot)}` : ""}.`
+                    : `I couldn't find an exact match. The best alternative is ${bestHeuristic.room.name}${suggestedSlot ? ` at ${this.to12Hour(suggestedSlot)}` : ""} with capacity ${bestHeuristic.room.capacity} and features: ${bestHeuristic.room.features}.`,
                 alternatives: alternatives.length > 0 ? alternatives : undefined,
             };
         }
