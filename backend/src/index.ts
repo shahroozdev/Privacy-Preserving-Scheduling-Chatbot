@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
 import { NLPEngine } from "./nlp/processor";
 import { MatchingEngine } from "./matching/engine";
@@ -20,10 +20,10 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (req: any, res: any) => {
   res.send("Server is working!");
 });
-app.get("/rooms", async (req: Request, res: Response) => {
+app.get("/rooms", async (req: any, res: any) => {
   try {
     const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
     res.json(config.rooms);
@@ -32,7 +32,7 @@ app.get("/rooms", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch rooms" });
   }
 });
-app.post("/parse", (req: Request, res: Response) => {
+app.post("/parse", (req: any, res: any) => {
   try {
     const text = req.body.text;
     if (!text) {
@@ -46,7 +46,7 @@ app.post("/parse", (req: Request, res: Response) => {
   }
 });
 
-app.post("/match", async (req: Request, res: Response) => {
+app.post("/match", async (req: any, res: any) => {
   try {
     const text = req.body.text;
     if (!text) {
