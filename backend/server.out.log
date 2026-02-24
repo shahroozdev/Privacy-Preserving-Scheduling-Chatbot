@@ -1,0 +1,6 @@
+
+> backend@1.0.0 start D:\portfolio\Privacy-Preserving-Scheduling-Chatbot\backend
+> ts-node src/index.ts
+
+[dotenv@17.3.1] injecting env (7) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Server running on port http://localhost:3333

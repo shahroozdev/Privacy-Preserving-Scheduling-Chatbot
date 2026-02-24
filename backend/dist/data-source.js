@@ -32,8 +32,17 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppDataSource = void 0;
+exports.initializeDatabase = exports.AppDataSource = void 0;
 require("reflect-metadata");
 const typeorm_1 = require("typeorm");
 const Room_1 = require("./entity/Room");
@@ -41,19 +50,27 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "postgres",
-    host: process.env.DB_HOST || "localhost",
+    host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || "5432"),
-    username: process.env.DB_USERNAME || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_NAME || "scheduling_chatbot",
-    synchronize: true, // Auto-create tables for dev
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    // Use synchronize: false in production!
+    synchronize: process.env.NODE_ENV !== "production",
     logging: false,
     entities: [Room_1.Room],
-    migrations: [],
-    subscribers: [],
-    ssl: true,
+    ssl: {
+        rejectUnauthorized: false, // Common requirement for serverless DB providers
+    },
     extra: {
-        max: 20, // Maximum number of connections in the pool
-        idleTimeoutMillis: 30000,
+        max: 2,
+        connectionTimeoutMillis: 10000, // Increase to 10 seconds
     },
 });
+const initializeDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
+    if (!exports.AppDataSource.isInitialized) {
+        yield exports.AppDataSource.initialize();
+    }
+    return exports.AppDataSource;
+});
+exports.initializeDatabase = initializeDatabase;

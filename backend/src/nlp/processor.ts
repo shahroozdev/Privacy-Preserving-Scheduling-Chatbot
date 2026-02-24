@@ -101,27 +101,25 @@ export class NLPEngine {
     const doc = nlp(text);
     // Normalize "ten" -> "10" and "fifth" -> "5"
     doc.numbers().toNumber();
+    const normalizedText = doc.text();
+    const lowerText = normalizedText.toLowerCase();
 
     const constraints: SchedulingConstraints = {
       requirements: [],
     };
 
-    // 1. Extract Capacity
-    // Look for "#Value (people|pax|...)" OR "for #Value"
-    const capacityMatch:any = doc.match(
-      "(#Value (people|pax|users|seats|attendees|persons)|for #Value)",
+    // 1. Extract Capacity from normalized text ("five peeps" -> "5 peeps")
+    const directCapacityMatch = lowerText.match(
+      /\b(\d+)\s*(people|peeps|pax|users|seats|attendees|persons)\b/,
     );
-
-    if (capacityMatch.found) {
-      const jsonData = capacityMatch.values().json();
-      if (jsonData && jsonData.length > 0) {
-        // jsonData[0].number will be the actual integer 10
-        constraints.capacity = jsonData[0]?.number?.num;
-      }
+    const forCapacityMatch = lowerText.match(/\bfor\s+(\d+)\b/);
+    if (directCapacityMatch) {
+      constraints.capacity = parseInt(directCapacityMatch[1], 10);
+    } else if (forCapacityMatch) {
+      constraints.capacity = parseInt(forCapacityMatch[1], 10);
     }
 
     // 2. Extract Time
-    const normalizedText = doc.text();
     const timeMatch = normalizedText.match(/(\d{1,2})[:\.](\d{2})/);
     if (timeMatch) {
       let h = parseInt(timeMatch[1]);
@@ -141,7 +139,6 @@ export class NLPEngine {
     }
 
     // 3. Extract Requirements
-    const lowerText = normalizedText.toLowerCase();
     for (const feature of this.KNOWN_FEATURES) {
       if (lowerText.includes(feature)) {
         constraints.requirements.push(feature);

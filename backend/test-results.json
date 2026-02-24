@@ -1,7 +1,9 @@
 {
   "totalTests": 100,
-  "exactMatches": 88,
-  "heuristicMatches": 12,
+  "exactMatches": 79,
+  "heuristicMatches": 21,
+  "noneMatches": 0,
   "failures": 0,
-  "nlpFailures": 0
+  "nlpFailures": 0,
+  "connectionFailures": 0
 }

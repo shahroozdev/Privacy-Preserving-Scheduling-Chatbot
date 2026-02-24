@@ -1,5 +1,12 @@
-import { Room } from "../entity/Room";
 import { SchedulingConstraints } from "../nlp/processor";
+
+export interface Room {
+  id: string | number;
+  name: string;
+  capacity: number;
+  features: string[];
+  availableSlots: string[];
+}
 
 export interface MatchResult {
   matchType: "EXACT" | "HEURISTIC" | "NONE";
@@ -13,189 +20,177 @@ interface TimeAlternative {
   diff: number;
 }
 export class MatchingEngine {
-  // 1:version
-  // static findMatch(request: SchedulingConstraints, rooms: Room[]): MatchResult {
-  //     console.log(request, 'request')
-  //     const exactMatches = rooms.filter(r => {
-  //         if (request.capacity.num && r.capacity < request.capacity.num) return false;
-  //         if (request.time && !r.availableSlots.includes(request.time)) return false;
-  //         if (request.requirements) {
-  //             const hasAll = request.requirements.every(req => r.features.includes(req));
-  //             if (!hasAll) return false;
-  //         }
-  //         return true;
-  //     });
-
-  //     if (exactMatches.length > 0) {
-  //         exactMatches.sort((a, b) => a.capacity - b.capacity);
-  //         return {
-  //             matchType: 'EXACT',
-  //             room: exactMatches[0],
-  //             explanation: `Perfect match! ${exactMatches[0].name} has capacity ${exactMatches[0].capacity}, includes all requested features, and is available at ${request?.time}.`
-  //         };
-  //     }
-
-  //     let bestRoom: Room | null = null;
-  //     let bestScore = -Infinity;
-  //     let bestExplanation = "";
-
-  //     for (const r of rooms) {
-  //         let score = 0;
-  //         const reasons: string[] = [];
-
-  //         if (request.capacity) {
-  //             if (r.capacity >= request.capacity) {
-  //                 score += 10;
-  //             } else {
-  //                 continue;
-  //             }
-  //         }
-
-  //         if (request.time) {
-  //             if (r.availableSlots.includes(request.time)) {
-  //                 score += 20;
-  //             } else {
-  //                 // Basic check for nearby times could go here
-  //                 // For now, treat as missing constraint
-  //                 score -= 5;
-  //                 reasons.push(`Time ${request.time} not available`);
-  //             }
-  //         }
-
-  //         if (request.requirements) {
-  //             const missing = request.requirements.filter(req => !r.features.includes(req));
-  //             if (missing.length === 0) {
-  //                 score += 20;
-  //             } else if (missing.length === 1) {
-  //                 score += 10;
-  //                 reasons.push(`Missing feature: ${missing[0]}`);
-  //             } else {
-  //                 continue;
-  //             }
-  //         }
-
-  //         if (score > bestScore) {
-  //             bestScore = score;
-  //             bestRoom = r;
-  //             bestExplanation = `Heuristic match. ${reasons.join(", ")}.`;
-  //         }
-  //     }
-
-  //     if (bestRoom) {
-  //         return {
-  //             matchType: 'HEURISTIC',
-  //             room: bestRoom,
-  //             explanation: bestExplanation || "Best available option."
-  //         };
-  //     }
-
-  //     return { matchType: 'NONE', explanation: "No suitable room found." };
-  // }
-  // 2:version
   static findMatch(request: SchedulingConstraints, rooms: Room[]): MatchResult {
-    const reqCap =
-      typeof request.capacity === "object"
-        ? request.capacity.num
-        : request.capacity;
-    const { time, requirements } = request;
-    const reqMin = time ? this.timeToMinutes(time) : null;
+    const reqCap = this.normalizeCapacity(request.capacity);
+    const reqTime = request.time?.trim() || null;
+    const reqTimeMinutes = reqTime ? this.timeToMinutes(reqTime) : null;
+    const reqFeatures = (request.requirements || []).map((feature) =>
+      feature.toLowerCase(),
+    );
 
-    // Use the interface here to prevent the 'never' type error
+    let bestExact: Room | null = null;
+    let bestExactSpareCapacity = Number.POSITIVE_INFINITY;
+
+    let bestHeuristicAboveCapacity: { room: Room; score: number; slot?: string } | null =
+      null;
+    let bestHeuristicBelowCapacity: { room: Room; score: number; slot?: string } | null =
+      null;
     let bestTimeAlt: TimeAlternative | null = null;
     let bestSizeAlt: Room | null = null;
-    // 2. STRICT EXACT MATCH FILTER
-    const exactMatches = rooms.filter((r) => {
-      // Check capacity: Room must be able to fit the request
-      const hasCap = r.capacity >= reqCap;
 
-      // Check time: Trim spaces to avoid "14:00" !== "14:00 "
-      const hasTime = time
-        ? r.availableSlots.map((s) => s.trim()).includes(time.trim())
-        : true;
-
-      // Check features: Lowercase both for a "fuzzy" match
-      const hasFeats = requirements.every((req) =>
-        r.features.map((f) => f.toLowerCase()).includes(req.toLowerCase()),
+    for (const room of rooms) {
+      const normalizedFeatures = new Set(
+        room.features.map((feature) => feature.toLowerCase()),
       );
+      const normalizedSlots = room.availableSlots.map((slot) => slot.trim());
 
-      return hasCap && hasTime && hasFeats;
-    });
+      const matchedFeatureCount = reqFeatures.reduce(
+        (count, feature) => count + (normalizedFeatures.has(feature) ? 1 : 0),
+        0,
+      );
+      const allFeaturesMatch = matchedFeatureCount === reqFeatures.length;
 
-    // 3. IF EXACT FOUND, STOP HERE
-    if (exactMatches.length > 0) {
-      // Get the smallest room that satisfies the requirement (most efficient)
-      const best = exactMatches.sort((a, b) => a.capacity - b.capacity)[0];
-      return {
-        matchType: "EXACT",
-        room: best,
-        explanation: `I found an exact match! ${best.name} is available at ${this.to12Hour(time as string)}.`,
-      };
-    }
-    for (const r of rooms) {
-      const hasFeats = requirements.every((f) => r.features.includes(f));
-      if (!hasFeats) continue;
+      const hasCapacity = reqCap === null ? true : room.capacity >= reqCap;
+      const exactTimeMatch = reqTime ? normalizedSlots.includes(reqTime) : true;
 
-      // Alternative A: Closest Time for requested capacity
-      if (reqCap && r.capacity >= reqCap && reqMin !== null) {
-        for (const slot of r.availableSlots) {
-          const diff = Math.abs(this.timeToMinutes(slot) - reqMin);
-          if (!bestTimeAlt || diff < bestTimeAlt.diff) {
-            bestTimeAlt = { room: r, slot, diff };
+      if (hasCapacity && exactTimeMatch && allFeaturesMatch) {
+        const spareCapacity = reqCap === null ? room.capacity : room.capacity - reqCap;
+        if (spareCapacity < bestExactSpareCapacity) {
+          bestExact = room;
+          bestExactSpareCapacity = spareCapacity;
+        }
+      }
+
+      const capacityScore =
+        reqCap === null
+          ? 20
+          : room.capacity >= reqCap
+            ? 40 - Math.min(room.capacity - reqCap, 30)
+            : Math.max(0, 20 - Math.min(reqCap - room.capacity, 20));
+
+      let timeScore = 10;
+      let closestSlot: string | undefined;
+      if (reqTimeMinutes !== null) {
+        let minDiff = Number.POSITIVE_INFINITY;
+        for (const slot of normalizedSlots) {
+          const diff = Math.abs(this.timeToMinutes(slot) - reqTimeMinutes);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestSlot = slot;
+          }
+        }
+        timeScore = Math.max(0, 30 - Math.floor(minDiff / 15) * 5);
+
+        if (hasCapacity && allFeaturesMatch && closestSlot) {
+          if (!bestTimeAlt || minDiff < bestTimeAlt.diff) {
+            bestTimeAlt = { room, slot: closestSlot, diff: minDiff };
           }
         }
       }
 
-      // Alternative B: Best size for requested time
-      if (time && r.availableSlots.includes(time)) {
-        if (!bestSizeAlt || r.capacity > bestSizeAlt.capacity) {
-          bestSizeAlt = r;
+      const featureScore =
+        reqFeatures.length === 0
+          ? 20
+          : Math.round((matchedFeatureCount / reqFeatures.length) * 30);
+
+      const heuristicScore = capacityScore + timeScore + featureScore;
+      if (reqCap !== null && room.capacity < reqCap) {
+        if (
+          !bestHeuristicBelowCapacity ||
+          heuristicScore > bestHeuristicBelowCapacity.score
+        ) {
+          bestHeuristicBelowCapacity = {
+            room,
+            score: heuristicScore,
+            slot: closestSlot,
+          };
         }
-      }
-    }
-
-    // 3. Final Synthesis
-    if (bestTimeAlt || bestSizeAlt) {
-      let options: string[] = [];
-
-      // TypeScript now knows bestTimeAlt is either null or a TimeAlternative
-      if (bestTimeAlt) {
-        options.push(
-          `${bestTimeAlt.room.name} is available at ${this.to12Hour(bestTimeAlt.slot as string)} fits ${bestTimeAlt.room.capacity} people`,
-        );
+      } else {
+        if (
+          !bestHeuristicAboveCapacity ||
+          heuristicScore > bestHeuristicAboveCapacity.score
+        ) {
+          bestHeuristicAboveCapacity = {
+            room,
+            score: heuristicScore,
+            slot: closestSlot,
+          };
+        }
       }
 
       if (
-        bestSizeAlt &&
-        (!bestTimeAlt || bestSizeAlt.name !== bestTimeAlt.room.name)
+        reqTime &&
+        normalizedSlots.includes(reqTime) &&
+        allFeaturesMatch &&
+        (!bestSizeAlt || room.capacity > bestSizeAlt.capacity)
       ) {
-        options.push(
-          `${bestSizeAlt.name} fits ${bestSizeAlt.capacity} people at ${this.to12Hour(time as string)}`,
-        );
+        bestSizeAlt = room;
       }
+    }
 
+    if (bestExact) {
       return {
-        matchType: "HEURISTIC",
-        room: bestTimeAlt?.room || bestSizeAlt!,
-        explanation: `I couldn't find an exact match. However, ${options.join("; or ")}.`,
+        matchType: "EXACT",
+        room: bestExact,
+        explanation: reqTime
+          ? `I found an exact match. ${bestExact.name} is available at ${this.to12Hour(reqTime)}.`
+          : `I found an exact match. ${bestExact.name} fits your requirements with capcity ${bestExact.capacity} and features: ${bestExact.features}.`,
       };
     }
 
-    return {
-      matchType: "NONE",
-      explanation: "No rooms meet your requirements.",
-    };
+    const bestHeuristic = bestHeuristicAboveCapacity || bestHeuristicBelowCapacity;
+    if (bestHeuristic) {
+      const alternatives: Room[] = [];
+      if (bestTimeAlt) alternatives.push(bestTimeAlt.room);
+      if (bestSizeAlt && !alternatives.some((r) => r.id === bestSizeAlt.id)) {
+        alternatives.push(bestSizeAlt);
+      }
+
+      const suggestedSlot =
+        bestHeuristic.slot ||
+        bestTimeAlt?.slot ||
+        bestHeuristic.room.availableSlots[0];
+
+      return {
+        matchType: "HEURISTIC",
+        room: bestHeuristic.room,
+        explanation:
+          reqCap !== null && bestHeuristic.room.capacity < reqCap
+            ? `I couldn't find a room for ${reqCap} people, but the closest option is ${bestHeuristic.room.name} with capacity  ${bestHeuristic.room.capacity} and features: ${bestHeuristic.room.features}${suggestedSlot ? ` at ${this.to12Hour(suggestedSlot)}` : ""}.`
+            : `I couldn't find an exact match. The best alternative is ${bestHeuristic.room.name}${suggestedSlot ? ` at ${this.to12Hour(suggestedSlot)}` : ""} with capacity ${bestHeuristic.room.capacity} and features: ${bestHeuristic.room.features}.`,
+        alternatives: alternatives.length > 0 ? alternatives : undefined,
+      };
+    }
+
+    return { matchType: "NONE", explanation: "No rooms meet your requirements." };
   }
-  // Helper to convert "17:00" to 1020 minutes
+  
+  private static normalizeCapacity(capacity: SchedulingConstraints["capacity"]): number | null {
+    if (typeof capacity === "number" && Number.isFinite(capacity)) {
+      return capacity;
+    }
+    if (
+      typeof capacity === "object" &&
+      capacity !== null &&
+      typeof capacity.num === "number" &&
+      Number.isFinite(capacity.num)
+    ) {
+      return capacity.num;
+    }
+    return null;
+  }
+
   private static timeToMinutes(t: string): number {
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
   }
-  private static to12Hour(time24:string) {
-  const [hours, minutes] = time24.split(":").map(Number);
+  
+  private static to12Hour(time24: string) {
+    const [hours, minutes] = time24.split(":").map(Number);
 
-  const period = hours >= 12 ? "PM" : "AM";
-  const hour12 = hours % 12 || 12;
+    const period = hours >= 12 ? "PM" : "AM";
+    const hour12 = hours % 12 || 12;
 
-  return `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
-}
+    return `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
+  }
 }

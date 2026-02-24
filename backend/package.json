@@ -6,7 +6,6 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon --watch \"src/**/*.ts\" --exec \"pnpm ts-node\" src/index.ts",
-    "seed": "pnpm exec ts-node src/seed.ts",
     "test-harness": "ts-node src/test-harness.ts",
     "build": "tsc"
   },
@@ -32,8 +31,6 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
-    "pg": "^8.18.0",
-    "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.28"
+    "reflect-metadata": "^0.2.2"
   }
 }

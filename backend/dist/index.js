@@ -15,38 +15,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const data_source_1 = require("./data-source");
 const processor_1 = require("./nlp/processor");
 const engine_1 = require("./matching/engine");
-const Room_1 = require("./entity/Room");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const configPath = path_1.default.join(process.cwd(), "mockData.json");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: "*", // Replace with your frontend's actual URL
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express_1.default.json());
-// Initialize DB
-data_source_1.AppDataSource.initialize()
-    .then(() => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Database connected.");
-}))
-    .catch((error) => console.log(error));
 app.get("/", (req, res) => {
     res.send("Server is working!");
 });
 app.get("/rooms", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const roomRepo = data_source_1.AppDataSource.getRepository(Room_1.Room);
-        const rooms = yield roomRepo.find();
-        res.json(rooms);
+        const config = JSON.parse(fs_1.default.readFileSync(configPath, "utf8"));
+        res.json(config.rooms);
     }
     catch (error) {
         console.error("Rooms fetch error:", error);
         res.status(500).json({ error: "Failed to fetch rooms" });
     }
 }));
-// Endpoint A: Parse (NLP Only) - useful for testing/eval
 app.post("/parse", (req, res) => {
     try {
         const text = req.body.text;
@@ -61,7 +56,6 @@ app.post("/parse", (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-// Endpoint B: Match (Full Pipeline)
 app.post("/match", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const text = req.body.text;
@@ -69,17 +63,11 @@ app.post("/match", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400).json({ error: "No text provided" });
             return;
         }
-        // 1. Module A: NLP
         const constraints = processor_1.NLPEngine.extractConstraints(text);
         console.log("Extracted Constraints:", constraints);
-        // 2. Module B: Matching
-        const roomRepo = data_source_1.AppDataSource.getRepository(Room_1.Room);
-        const rooms = yield roomRepo.find();
-        const matchResult = engine_1.MatchingEngine.findMatch(constraints, rooms);
-        // 3. Response
+        const config = JSON.parse(fs_1.default.readFileSync(configPath, "utf8"));
+        const matchResult = engine_1.MatchingEngine.findMatch(constraints, config.rooms);
         res.json(matchResult);
-        // Privacy: No logs of user text stored in DB.
-        // We only logged to console for debug (Module C note: in prod, remove console.log or anonymize)
     }
     catch (error) {
         console.error(error);
