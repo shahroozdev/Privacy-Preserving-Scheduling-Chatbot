@@ -9,7 +9,22 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const configPath = path.join(process.cwd(), "mockData.json");
+const getConfigPath = () => {
+  const candidates = [
+    path.join(process.cwd(), "mockData.json"),
+    path.join(process.cwd(), "backend", "mockData.json"),
+    path.join(__dirname, "..", "mockData.json"),
+    path.join(__dirname, "..", "..", "mockData.json"),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`mockData.json not found. Tried: ${candidates.join(", ")}`);
+};
 const app = express();
 app.use(
   cors({
@@ -25,6 +40,7 @@ app.get("/", (req: any, res: any) => {
 });
 app.get("/rooms", async (req: any, res: any) => {
   try {
+    const configPath = getConfigPath();
     const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
     res.json(config.rooms);
   } catch (error) {
@@ -57,6 +73,7 @@ app.post("/match", async (req: any, res: any) => {
     const constraints = NLPEngine.extractConstraints(text);
     console.log("Extracted Constraints:", constraints);
 
+    const configPath = getConfigPath();
     const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
     const matchResult = MatchingEngine.findMatch(constraints, config.rooms);
 

@@ -21,7 +21,20 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const configPath = path_1.default.join(process.cwd(), "mockData.json");
+const getConfigPath = () => {
+    const candidates = [
+        path_1.default.join(process.cwd(), "mockData.json"),
+        path_1.default.join(process.cwd(), "backend", "mockData.json"),
+        path_1.default.join(__dirname, "..", "mockData.json"),
+        path_1.default.join(__dirname, "..", "..", "mockData.json"),
+    ];
+    for (const candidate of candidates) {
+        if (fs_1.default.existsSync(candidate)) {
+            return candidate;
+        }
+    }
+    throw new Error(`mockData.json not found. Tried: ${candidates.join(", ")}`);
+};
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: "*",
@@ -34,6 +47,7 @@ app.get("/", (req, res) => {
 });
 app.get("/rooms", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const configPath = getConfigPath();
         const config = JSON.parse(fs_1.default.readFileSync(configPath, "utf8"));
         res.json(config.rooms);
     }
@@ -65,6 +79,7 @@ app.post("/match", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         const constraints = processor_1.NLPEngine.extractConstraints(text);
         console.log("Extracted Constraints:", constraints);
+        const configPath = getConfigPath();
         const config = JSON.parse(fs_1.default.readFileSync(configPath, "utf8"));
         const matchResult = engine_1.MatchingEngine.findMatch(constraints, config.rooms);
         res.json(matchResult);
