@@ -25,7 +25,7 @@
       "id": "R04",
       "name": "Curie Conference Room",
       "capacity": 12,
-      "features": ["projector", "whiteboard", "wifi"],
+      "features": ["projector", "whiteboard", "wifi", "wheelchair_access"],
       "availableSlots": ["11:00", "14:00", "16:00"]
     },
     {
@@ -47,7 +47,7 @@
       "id": "R07",
       "name": "Turing Lab",
       "capacity": 20,
-      "features": ["projector", "sound system", "wifi"],
+      "features": ["projector", "sound system", "wifi", "wheelchair_access", "hearing_loop"],
       "availableSlots": ["08:00", "09:00", "10:00"]
     },
     {
@@ -76,7 +76,7 @@
       "id": "R11",
       "name": "Copernicus Board Room",
       "capacity": 14,
-      "features": ["tv", "wifi", "conference phone"],
+      "features": ["tv", "wifi", "conference phone", "wheelchair_access"],
       "availableSlots": ["11:00", "14:00"]
     },
     {
@@ -126,7 +126,7 @@
       "id": "R18",
       "name": "Hubble Observatory Room",
       "capacity": 20,
-      "features": ["projector", "video", "wifi"],
+      "features": ["projector", "video", "wifi", "wheelchair_access"],
       "availableSlots": ["08:00", "10:00", "12:00"]
     },
     {
@@ -148,7 +148,7 @@
       "id": "R21",
       "name": "Da Vinci Studio",
       "capacity": 16,
-      "features": ["projector", "screen", "wifi"],
+      "features": ["projector", "screen", "wifi", "wheelchair_access"],
       "availableSlots": ["10:00", "14:00"]
     },
     {
@@ -212,7 +212,7 @@
       "id": "R30",
       "name": "Bezos Board Room",
       "capacity": 16,
-      "features": ["tv", "conference phone", "wifi"],
+      "features": ["tv", "conference phone", "wifi", "wheelchair_access", "hearing_loop"],
       "availableSlots": ["13:00", "16:00"]
     },
 
@@ -227,7 +227,7 @@
       "id": "R32",
       "name": "Turing AI Room",
       "capacity": 18,
-      "features": ["projector", "screen", "wifi"],
+      "features": ["projector", "screen", "wifi", "wheelchair_access"],
       "availableSlots": ["10:00", "14:00"]
     },
     {
@@ -263,7 +263,7 @@
       "id": "R37",
       "name": "Hinton ML Lab",
       "capacity": 20,
-      "features": ["video", "projector", "wifi"],
+      "features": ["video", "projector", "wifi", "wheelchair_access", "hearing_loop"],
       "availableSlots": ["09:00", "12:00"]
     },
     {

@@ -35,6 +35,20 @@ const getConfigPath = () => {
     }
     throw new Error(`mockData.json not found. Tried: ${candidates.join(", ")}`);
 };
+const getTestResultsPath = () => {
+    const candidates = [
+        path_1.default.join(process.cwd(), "test-results.json"),
+        path_1.default.join(process.cwd(), "backend", "test-results.json"),
+        path_1.default.join(__dirname, "..", "test-results.json"),
+        path_1.default.join(__dirname, "..", "..", "test-results.json"),
+    ];
+    for (const candidate of candidates) {
+        if (fs_1.default.existsSync(candidate)) {
+            return candidate;
+        }
+    }
+    throw new Error(`test-results.json not found. Tried: ${candidates.join(", ")}`);
+};
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: "*",
@@ -56,6 +70,17 @@ app.get("/rooms", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ error: "Failed to fetch rooms" });
     }
 }));
+app.get("/test-results", (req, res) => {
+    try {
+        const resultPath = getTestResultsPath();
+        const results = JSON.parse(fs_1.default.readFileSync(resultPath, "utf8"));
+        res.json(results);
+    }
+    catch (error) {
+        console.error("Test results fetch error:", error);
+        res.status(404).json({ error: "Test results not found" });
+    }
+});
 app.post("/parse", (req, res) => {
     try {
         const text = req.body.text;
