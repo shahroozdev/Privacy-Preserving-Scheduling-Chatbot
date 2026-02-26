@@ -1,3 +1,5 @@
+import { InfoTip } from "./InfoTip";
+
 interface Alternative {
   room: {
     name: string;
@@ -56,8 +58,9 @@ export function ChatBubble({ role, content, details }: ChatBubbleProps) {
                   </span>
                 )}
                 {details.score !== undefined && (
-                  <span className="px-2 py-1 rounded-full bg-emerald-200 text-emerald-900 font-semibold">
+                  <span className="px-2 py-1 rounded-full bg-emerald-200 text-emerald-900 font-semibold inline-flex items-center">
                     Match Score: {details.score}%
+                    <InfoTip text="This score represents how well a room fits your specific constraints (capacity, time, and features) using a weighted algorithm." />
                   </span>
                 )}
                 {details.time && (
