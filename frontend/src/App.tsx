@@ -5,7 +5,7 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { AccessibilityPage } from "./pages/AccessibilityPage";
 import { HarnessPage } from "./pages/HarnessPage";
 import Sidebar from "./components/sidebar";
-import LandingPage from "./pages/landingPage";
+import LandingPage from "./pages/LandingComponent";
 
 function App() {
   const [sessionStarted, setSessionStarted] = useState(false);
